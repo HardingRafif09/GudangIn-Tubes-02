@@ -34,6 +34,17 @@ func readLine(prompt string) string {
 	return strings.TrimSpace(scanner.Text())
 }
 
+// FIX #8: readNonEmpty — validasi kode/nama tidak boleh kosong
+func readNonEmpty(prompt string) string {
+	for {
+		s := readLine(prompt)
+		if len(s) > 0 {
+			return s
+		}
+		fmt.Println("Input tidak boleh kosong!")
+	}
+}
+
 func readInt(prompt string) int {
 	for {
 		s := readLine(prompt)
@@ -43,6 +54,17 @@ func readInt(prompt string) int {
 			return n
 		}
 		fmt.Println("Input tidak valid, masukkan angka! (contoh: 10000 atau 10.000)")
+	}
+}
+
+// FIX #6 & #7: readPositiveInt — validasi nilai harus lebih dari 0
+func readPositiveInt(prompt string) int {
+	for {
+		n := readInt(prompt)
+		if n > 0 {
+			return n
+		}
+		fmt.Println("Nilai harus lebih dari 0!")
 	}
 }
 
@@ -66,12 +88,32 @@ func cetakBarang(b Barang) {
 	fmt.Println()
 }
 
+// FIX #2: cek kapasitas array sebelum tambah
+// FIX #1: cek duplikasi kode
+// FIX #8: gunakan readNonEmpty untuk kode & nama
+// FIX #6: gunakan readPositiveInt untuk harga & stok
 func tambahBarang(A *DaftarBarang, n *int) {
 	fmt.Println("=== Tambah Barang ===")
-	A[*n].Kode = readLine("Kode Barang  : ")
-	A[*n].Nama = readLine("Nama Barang  : ")
-	A[*n].Harga = readInt("Harga Barang : Rp ")
-	A[*n].Stok = readInt("Stok Barang  : ")
+
+	// FIX #2
+	if *n >= NMAX {
+		fmt.Printf("Gudang penuh! Kapasitas maksimal %d barang.\n", NMAX)
+		return
+	}
+
+	// FIX #8
+	kode := readNonEmpty("Kode Barang  : ")
+
+	// FIX #1
+	if cariBarang(*A, *n, kode) != -1 {
+		fmt.Println("Kode sudah digunakan! Gunakan kode yang berbeda.")
+		return
+	}
+
+	A[*n].Kode  = kode
+	A[*n].Nama  = readNonEmpty("Nama Barang  : ") // FIX #8
+	A[*n].Harga = readPositiveInt("Harga Barang : RP. ") // FIX #6
+	A[*n].Stok  = readPositiveInt("Stok Barang  : ") // FIX #6
 	*n++
 	fmt.Println("Barang berhasil ditambahkan")
 }
@@ -97,35 +139,42 @@ func cariBarang(A DaftarBarang, n int, kode string) int {
 	return -1
 }
 
+// FIX #8: gunakan readNonEmpty untuk nama
+// FIX #6: gunakan readPositiveInt untuk harga & stok
 func ubahBarang(A *DaftarBarang, n int) {
 	fmt.Println("=== Ubah Barang ===")
-	kode := readLine("Masukkan kode barang : ")
-	idx := cariBarang(*A, n, kode)
+	kode := readNonEmpty("Masukkan kode barang : ")
+	idx  := cariBarang(*A, n, kode)
 	if idx != -1 {
-		A[idx].Nama = readLine("Nama Baru  : ")
-		A[idx].Harga = readInt("Harga Baru : Rp ")
-		A[idx].Stok = readInt("Stok Baru  : ")
+		A[idx].Nama  = readNonEmpty("Nama Baru  : ")   // FIX #8
+		A[idx].Harga = readPositiveInt("Harga Baru : ") // FIX #6
+		A[idx].Stok  = readPositiveInt("Stok Baru  : ") // FIX #6
 		fmt.Println("Data berhasil diubah")
 	} else {
 		fmt.Println("Barang tidak ditemukan")
 	}
 }
 
+// FIX #5: zero-out elemen terakhir setelah shift & decrement
 func hapusBarang(A *DaftarBarang, n *int) {
 	fmt.Println("=== Hapus Barang ===")
-	kode := readLine("Masukkan kode barang : ")
-	idx := cariBarang(*A, *n, kode)
+	kode := readNonEmpty("Masukkan kode barang : ")
+	idx  := cariBarang(*A, *n, kode)
 	if idx != -1 {
 		for i := idx; i < *n-1; i++ {
 			A[i] = A[i+1]
 		}
 		*n--
+		A[*n] = Barang{} // FIX #5: zero-out elemen terakhir (ghost data)
 		fmt.Println("Barang berhasil dihapus")
 	} else {
 		fmt.Println("Barang tidak ditemukan")
 	}
 }
 
+// FIX #3: cek kapasitas DaftarTransaksi sebelum menulis
+// FIX #7: validasi jumlah transaksi > 0
+// FIX #9: jenis transaksi case-insensitive
 func catatTransaksi(gudang *DaftarBarang, jmlBarang int, trx *DaftarTransaksi, jmlTrx *int) {
 	fmt.Println("=== Catat Transaksi Barang ===")
 	if jmlBarang == 0 {
@@ -133,7 +182,13 @@ func catatTransaksi(gudang *DaftarBarang, jmlBarang int, trx *DaftarTransaksi, j
 		return
 	}
 
-	kode := readLine("Masukkan Kode Barang : ")
+	// FIX #3
+	if *jmlTrx >= NMAX {
+		fmt.Printf("Riwayat transaksi penuh! Kapasitas maksimal %d transaksi.\n", NMAX)
+		return
+	}
+
+	kode   := readNonEmpty("Masukkan Kode Barang : ")
 	indeks := cariBarang(*gudang, jmlBarang, kode)
 	if indeks == -1 {
 		fmt.Println("Transaksi Gagal: Barang tidak terdaftar")
@@ -141,8 +196,13 @@ func catatTransaksi(gudang *DaftarBarang, jmlBarang int, trx *DaftarTransaksi, j
 	}
 
 	fmt.Printf("Barang: %s | Stok saat ini: %d\n", gudang[indeks].Nama, gudang[indeks].Stok)
-	jenis := readLine("Jenis Transaksi (Masuk / Keluar) : ")
-	jumlah := readInt("Jumlah Barang                    : ")
+
+	// FIX #9: normalisasi input jenis transaksi (case-insensitive)
+	jenisRaw := readNonEmpty("Jenis Transaksi (Masuk / Keluar) : ")
+	jenis    := strings.Title(strings.ToLower(jenisRaw))
+
+	// FIX #7: validasi jumlah > 0
+	jumlah := readPositiveInt("Jumlah Barang                    : ")
 
 	if jenis == "Masuk" {
 		gudang[indeks].Stok += jumlah
@@ -156,7 +216,7 @@ func catatTransaksi(gudang *DaftarBarang, jmlBarang int, trx *DaftarTransaksi, j
 			return
 		}
 	} else {
-		fmt.Println("Transaksi Gagal: Jenis transaksi tidak dikenal.")
+		fmt.Println("Transaksi Gagal: Jenis transaksi tidak dikenal. Gunakan 'Masuk' atau 'Keluar'.")
 		return
 	}
 
@@ -198,6 +258,7 @@ func sequentialSearchNama(A DaftarBarang, n int, nama string) {
 	}
 }
 
+// FIX #4: binary search by kode — membutuhkan data terurut by kode, bukan stok
 func binarySearchKode(A DaftarBarang, n int, kode string) int {
 	kiri, kanan := 0, n-1
 	for kiri <= kanan {
@@ -213,7 +274,8 @@ func binarySearchKode(A DaftarBarang, n int, kode string) int {
 	return -1
 }
 
-func searchBarang(A DaftarBarang, n int, sudahTerurut bool) {
+// FIX #4: searchBarang kini memakai sudahTerurutKode (bukan sudahTerurut stok)
+func searchBarang(A DaftarBarang, n int, sudahTerurutKode bool) {
 	fmt.Println("=== Pencarian Barang ===")
 	if n == 0 {
 		fmt.Println("Belum ada data barang")
@@ -231,13 +293,14 @@ func searchBarang(A DaftarBarang, n int, sudahTerurut bool) {
 		fmt.Println("2. Binary Search")
 		metode := readInt("Pilih : ")
 
-		if metode == 2 && !sudahTerurut {
-			fmt.Println("Data belum diurutkan! Gunakan menu Sort terlebih dahulu.")
+		// FIX #4: cek flag kode, bukan stok
+		if metode == 2 && !sudahTerurutKode {
+			fmt.Println("Data belum diurutkan berdasarkan Kode! Gunakan menu Sort → Urutkan by Kode terlebih dahulu.")
 			return
 		}
 
-		kode := readLine("Masukkan kode barang : ")
-		idx := -1
+		kode := readNonEmpty("Masukkan kode barang : ")
+		idx  := -1
 		if metode == 1 {
 			idx = sequentialSearchKode(A, n, kode)
 		} else if metode == 2 {
@@ -255,7 +318,7 @@ func searchBarang(A DaftarBarang, n int, sudahTerurut bool) {
 		}
 
 	} else if pilihan == 2 {
-		nama := readLine("Masukkan nama barang : ")
+		nama := readNonEmpty("Masukkan nama barang : ")
 		fmt.Println("\nHasil pencarian :")
 		sequentialSearchNama(A, n, nama)
 	} else {
@@ -281,7 +344,7 @@ func selectionSortStok(A *DaftarBarang, n int, ascending bool) {
 func insertionSortStok(A *DaftarBarang, n int, ascending bool) {
 	for i := 1; i < n; i++ {
 		temp := A[i]
-		j := i - 1
+		j    := i - 1
 		for j >= 0 && ((ascending && A[j].Stok > temp.Stok) || (!ascending && A[j].Stok < temp.Stok)) {
 			A[j+1] = A[j]
 			j--
@@ -290,38 +353,69 @@ func insertionSortStok(A *DaftarBarang, n int, ascending bool) {
 	}
 }
 
-func sortBarang(A *DaftarBarang, n int, sudahTerurut *bool) {
-	fmt.Println("=== Pengurutan Stok ===")
+// FIX #4: tambahkan sort by Kode (insertion sort) supaya binary search valid
+func insertionSortKode(A *DaftarBarang, n int) {
+	for i := 1; i < n; i++ {
+		temp := A[i]
+		j    := i - 1
+		for j >= 0 && A[j].Kode > temp.Kode {
+			A[j+1] = A[j]
+			j--
+		}
+		A[j+1] = temp
+	}
+}
+
+// FIX #4: sortBarang kini mengelola dua flag terpisah (sudahTerurutStok & sudahTerurutKode)
+func sortBarang(A *DaftarBarang, n int, sudahTerurutStok *bool, sudahTerurutKode *bool) {
+	fmt.Println("=== Pengurutan ===")
 	if n == 0 {
 		fmt.Println("Belum ada data barang")
 		return
 	}
 
-	fmt.Println("Metode pengurutan:")
-	fmt.Println("1. Selection Sort")
-	fmt.Println("2. Insertion Sort")
-	metode := readInt("Pilih : ")
-	if metode < 1 || metode > 2 {
-		fmt.Println("Pilihan tidak tersedia")
-		return
-	}
+	fmt.Println("Urutkan berdasarkan:")
+	fmt.Println("1. Stok Barang")
+	fmt.Println("2. Kode Barang (diperlukan untuk Binary Search)")
+	basis := readInt("Pilih : ")
 
-	fmt.Println("Urutkan stok:")
-	fmt.Println("1. Terkecil ke Terbesar")
-	fmt.Println("2. Terbesar ke Terkecil")
-	urutan := readInt("Pilih : ")
-	if urutan < 1 || urutan > 2 {
-		fmt.Println("Pilihan tidak tersedia")
-		return
-	}
+	if basis == 1 {
+		fmt.Println("Metode pengurutan:")
+		fmt.Println("1. Selection Sort")
+		fmt.Println("2. Insertion Sort")
+		metode := readInt("Pilih : ")
+		if metode < 1 || metode > 2 {
+			fmt.Println("Pilihan tidak tersedia")
+			return
+		}
 
-	ascending := urutan == 1
-	if metode == 1 {
-		selectionSortStok(A, n, ascending)
+		fmt.Println("Urutkan stok:")
+		fmt.Println("1. Terkecil ke Terbesar")
+		fmt.Println("2. Terbesar ke Terkecil")
+		urutan := readInt("Pilih : ")
+		if urutan < 1 || urutan > 2 {
+			fmt.Println("Pilihan tidak tersedia")
+			return
+		}
+
+		ascending := urutan == 1
+		if metode == 1 {
+			selectionSortStok(A, n, ascending)
+		} else {
+			insertionSortStok(A, n, ascending)
+		}
+		*sudahTerurutStok = true
+		*sudahTerurutKode = false // sort by stok membatalkan urutan kode
+
+	} else if basis == 2 {
+		insertionSortKode(A, n)
+		*sudahTerurutKode = true
+		*sudahTerurutStok = false // sort by kode membatalkan urutan stok
+		fmt.Println("Data berhasil diurutkan berdasarkan Kode. Binary Search kini tersedia.")
 	} else {
-		insertionSortStok(A, n, ascending)
+		fmt.Println("Pilihan tidak tersedia")
+		return
 	}
-	*sudahTerurut = true
 
 	fmt.Println("\nData barang setelah diurutkan :")
 	for i := 0; i < n; i++ {
@@ -369,10 +463,13 @@ func statistikBarang(A DaftarBarang, n int) {
 }
 
 func main() {
-	var data DaftarBarang
+	var data      DaftarBarang
 	var daftarTrx DaftarTransaksi
 	var n, jmlTrx int
-	sudahTerurut := false
+
+	// FIX #4: pisahkan dua flag untuk stok dan kode
+	sudahTerurutStok := false
+	sudahTerurutKode := false
 
 	for {
 		fmt.Println("=========================================")
@@ -400,15 +497,18 @@ func main() {
 			switch sub {
 			case 1:
 				tambahBarang(&data, &n)
-				sudahTerurut = false
+				sudahTerurutStok = false
+				sudahTerurutKode = false
 			case 2:
 				tampilBarang(data, n)
 			case 3:
 				ubahBarang(&data, n)
-				sudahTerurut = false
+				sudahTerurutStok = false
+				sudahTerurutKode = false
 			case 4:
 				hapusBarang(&data, &n)
-				sudahTerurut = false
+				sudahTerurutStok = false
+				sudahTerurutKode = false
 			}
 
 		case 2:
@@ -426,10 +526,11 @@ func main() {
 			}
 
 		case 3:
-			searchBarang(data, n, sudahTerurut)
+			// FIX #4: kirim flag kode, bukan stok
+			searchBarang(data, n, sudahTerurutKode)
 
 		case 4:
-			sortBarang(&data, n, &sudahTerurut)
+			sortBarang(&data, n, &sudahTerurutStok, &sudahTerurutKode)
 
 		case 5:
 			statistikBarang(data, n)
