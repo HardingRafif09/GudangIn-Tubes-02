@@ -176,24 +176,24 @@ func main() {
 	}
 }
 
-func catatTransaksi(gudang *DaftarBarang, jmlBarang int, trx *DaftarTransaksi, jmlTrx *int ) {
-	var jenis, kode string 
+func catatTransaksi(gudang *DaftarBarang, jmlBarang int, trx *DaftarTransaksi, jmlTrx *int) {
+	var jenis, kode string
 	var jumlah, indeks int
-	var ketemu bool = false 
+	var ketemu bool = false
 
 	fmt.Println("\n== CATAT TRANSAKSI BARANG ==")
 
-	if jmlBarang == 0 { 
+	if jmlBarang == 0 {
 		fmt.Println("Gudang kosong! Tambahkan master barang terlebih dahulu.")
 		return
 	}
 
-	fmt.Print("Masukkan Kode Barang: ") 
+	fmt.Print("Masukkan Kode Barang: ")
 	fmt.Scan(&kode)
 
 	for i := 0; i < jmlBarang; i++ {
 		if gudang[i].Kode == kode {
-			ketemu = true 
+			ketemu = true
 			indeks = i
 			break
 		}
@@ -210,10 +210,10 @@ func catatTransaksi(gudang *DaftarBarang, jmlBarang int, trx *DaftarTransaksi, j
 	fmt.Print("Jumlah Barang: ")
 	fmt.Scan(&jumlah)
 
-	if jenis == "Masuk" { 
+	if jenis == "Masuk" {
 		gudang[indeks].Stok += jumlah
 		fmt.Printf("Sukses: Stok %s bertambah menjadi %d\n", gudang[indeks].Nama, gudang[indeks].Stok)
-	} else if jenis == "Keluar" { 
+	} else if jenis == "Keluar" {
 		if gudang[indeks].Stok >= jumlah {
 			gudang[indeks].Stok -= jumlah
 			fmt.Printf("Sukses: Stok %s berkurang menjadi %d\n", gudang[indeks].Nama, gudang[indeks].Stok)
@@ -258,10 +258,10 @@ func sequentialSearchKode(A DaftarBarang, n int, kode string) int {
 	}
 	return -1
 }
- 
+
 func sequentialSearchNama(A DaftarBarang, n int, nama string) {
 	var ketemu bool = false
- 
+
 	for i := 0; i < n; i++ {
 		if strings.EqualFold(A[i].Nama, nama) {
 			fmt.Println("Kode  :", A[i].Kode)
@@ -272,21 +272,21 @@ func sequentialSearchNama(A DaftarBarang, n int, nama string) {
 			ketemu = true
 		}
 	}
- 
+
 	if !ketemu {
 		fmt.Println("Barang tidak ditemukan")
 	}
 }
- 
+
 func binarySearchKode(A DaftarBarang, n int, kode string) int {
 	var kiri, kanan, tengah int
- 
+
 	kiri = 0
 	kanan = n - 1
- 
+
 	for kiri <= kanan {
 		tengah = (kiri + kanan) / 2
- 
+
 		if A[tengah].Kode == kode {
 			return tengah
 		} else if A[tengah].Kode < kode {
@@ -295,45 +295,45 @@ func binarySearchKode(A DaftarBarang, n int, kode string) int {
 			kanan = tengah - 1
 		}
 	}
- 
+
 	return -1
 }
- 
+
 func searchBarang(A DaftarBarang, n int, sudahTerurut bool) {
 	var pilihan int
 	var metode int
- 
+
 	fmt.Println("=== Search Barang ===")
- 
+
 	if n == 0 {
 		fmt.Println("Belum ada data barang")
 		return
 	}
- 
+
 	fmt.Println("Cari berdasarkan:")
 	fmt.Println("1. Kode Barang")
 	fmt.Println("2. Nama Barang")
 	fmt.Print("Pilih : ")
 	fmt.Scan(&pilihan)
- 
+
 	if pilihan == 1 {
 		fmt.Println("Metode pencarian:")
 		fmt.Println("1. Sequential Search")
 		fmt.Println("2. Binary Search")
 		fmt.Print("Pilih : ")
 		fmt.Scan(&metode)
- 
+
 		if metode == 2 && !sudahTerurut {
 			fmt.Println("Data belum diurutkan! Gunakan menu Sort terlebih dahulu sebelum Binary Search.")
 			return
 		}
- 
+
 		var kode string
 		fmt.Print("Masukkan kode barang : ")
 		fmt.Scan(&kode)
- 
+
 		var idx int = -1
- 
+
 		if metode == 1 {
 			idx = sequentialSearchKode(A, n, kode)
 		} else if metode == 2 {
@@ -342,7 +342,7 @@ func searchBarang(A DaftarBarang, n int, sudahTerurut bool) {
 			fmt.Println("Pilihan tidak tersedia")
 			return
 		}
- 
+
 		if idx != -1 {
 			fmt.Println("\nBarang ditemukan :")
 			fmt.Println("Kode  :", A[idx].Kode)
@@ -352,23 +352,23 @@ func searchBarang(A DaftarBarang, n int, sudahTerurut bool) {
 		} else {
 			fmt.Println("Barang tidak ditemukan")
 		}
- 
+
 	} else if pilihan == 2 {
 		var nama string
 		fmt.Print("Masukkan nama barang : ")
 		fmt.Scan(&nama)
- 
+
 		fmt.Println("\nHasil pencarian :")
 		sequentialSearchNama(A, n, nama)
- 
+
 	} else {
 		fmt.Println("Pilihan tidak tersedia")
 	}
 }
- 
+
 func selectionSortStok(A *DaftarBarang, n int, ascending bool) {
 	var idxPilih, i, j int
- 
+
 	for i = 0; i < n-1; i++ {
 		idxPilih = i
 		for j = i + 1; j < n; j++ {
@@ -387,15 +387,15 @@ func selectionSortStok(A *DaftarBarang, n int, ascending bool) {
 		}
 	}
 }
- 
+
 func insertionSortStok(A *DaftarBarang, n int, ascending bool) {
 	var i, j int
 	var temp Barang
- 
+
 	for i = 1; i < n; i++ {
 		temp = A[i]
 		j = i - 1
- 
+
 		if ascending {
 			for j >= 0 && A[j].Stok > temp.Stok {
 				A[j+1] = A[j]
@@ -407,54 +407,54 @@ func insertionSortStok(A *DaftarBarang, n int, ascending bool) {
 				j = j - 1
 			}
 		}
- 
+
 		A[j+1] = temp
 	}
 }
- 
+
 func sortBarang(A *DaftarBarang, n int, sudahTerurut *bool) {
 	var metode int
 	var urutan int
- 
+
 	fmt.Println("=== Sort Barang ===")
- 
+
 	if n == 0 {
 		fmt.Println("Belum ada data barang")
 		return
 	}
- 
+
 	fmt.Println("Metode pengurutan:")
 	fmt.Println("1. Selection Sort")
 	fmt.Println("2. Insertion Sort")
 	fmt.Print("Pilih : ")
 	fmt.Scan(&metode)
- 
+
 	if metode < 1 || metode > 2 {
 		fmt.Println("Pilihan tidak tersedia")
 		return
 	}
- 
+
 	fmt.Println("Urutkan stok:")
 	fmt.Println("1. Terkecil ke Terbesar")
 	fmt.Println("2. Terbesar ke Terkecil")
 	fmt.Print("Pilih : ")
 	fmt.Scan(&urutan)
- 
+
 	if urutan < 1 || urutan > 2 {
 		fmt.Println("Pilihan tidak tersedia")
 		return
 	}
- 
+
 	var ascending bool = urutan == 1
- 
+
 	if metode == 1 {
 		selectionSortStok(A, n, ascending)
 	} else if metode == 2 {
 		insertionSortStok(A, n, ascending)
 	}
- 
+
 	*sudahTerurut = true
- 
+
 	fmt.Println("\nData barang setelah diurutkan :")
 	for i := 0; i < n; i++ {
 		fmt.Println("Data ke-", i+1)
@@ -465,36 +465,52 @@ func sortBarang(A *DaftarBarang, n int, sudahTerurut *bool) {
 		fmt.Println()
 	}
 }
- 
+
 func statistikBarang(A DaftarBarang, n int) {
 	var totalNilaiAset int
-	var minStok int
+	var minStok, maxStok int
 	var i int
- 
+
 	fmt.Println("=== Statistik Gudang ===")
- 
+
 	if n == 0 {
 		fmt.Println("Belum ada data barang")
 		return
 	}
- 
+
 	totalNilaiAset = 0
 	for i = 0; i < n; i++ {
 		totalNilaiAset = totalNilaiAset + (A[i].Harga * A[i].Stok)
 	}
- 
+
 	fmt.Println("\nTotal Nilai Aset Gudang :", totalNilaiAset)
- 
+
 	minStok = A[0].Stok
+	maxStok = A[0].Stok
+
 	for i = 1; i < n; i++ {
 		if A[i].Stok < minStok {
 			minStok = A[i].Stok
 		}
+		if A[i].Stok > maxStok {
+			maxStok = A[i].Stok
+		}
 	}
- 
+
 	fmt.Println("\nBarang dengan Stok Paling Sedikit :")
 	for i = 0; i < n; i++ {
 		if A[i].Stok == minStok {
+			fmt.Println("Kode  :", A[i].Kode)
+			fmt.Println("Nama  :", A[i].Nama)
+			fmt.Println("Harga :", A[i].Harga)
+			fmt.Println("Stok  :", A[i].Stok)
+			fmt.Println()
+		}
+	}
+
+	fmt.Println("Barang dengan Stok Paling Banyak :")
+	for i = 0; i < n; i++ {
+		if A[i].Stok == maxStok {
 			fmt.Println("Kode  :", A[i].Kode)
 			fmt.Println("Nama  :", A[i].Nama)
 			fmt.Println("Harga :", A[i].Harga)
