@@ -26,7 +26,6 @@ type Transaksi struct {
 type DaftarBarang [NMAX]Barang
 type DaftarTransaksi [NMAX]Transaksi
 
-// scanner diinisialisasi di main() agar tidak terbaca sebelum program siap
 var scanner *bufio.Scanner
 
 func readLine(prompt string) string {
@@ -35,7 +34,6 @@ func readLine(prompt string) string {
 	return strings.TrimSpace(scanner.Text())
 }
 
-// FIX #8: readNonEmpty — validasi kode/nama tidak boleh kosong
 func readNonEmpty(prompt string) string {
 	for {
 		s := readLine(prompt)
@@ -58,7 +56,6 @@ func readInt(prompt string) int {
 	}
 }
 
-// FIX #6 & #7: readPositiveInt — validasi nilai harus lebih dari 0
 func readPositiveInt(prompt string) int {
 	for {
 		n := readInt(prompt)
@@ -89,10 +86,6 @@ func cetakBarang(b Barang) {
 	fmt.Println()
 }
 
-// FIX #2: cek kapasitas array sebelum tambah
-// FIX #1: cek duplikasi kode
-// FIX #8: gunakan readNonEmpty untuk kode & nama
-// FIX #6: gunakan readPositiveInt untuk harga & stok
 func tambahBarang(A *DaftarBarang, n *int) {
 	fmt.Println("=== Tambah Barang ===")
 
@@ -143,23 +136,20 @@ func cariBarang(A DaftarBarang, n int, kode string) int {
 	return -1
 }
 
-// FIX #8: gunakan readNonEmpty untuk nama
-// FIX #6: gunakan readPositiveInt untuk harga & stok
 func ubahBarang(A *DaftarBarang, n int) {
 	fmt.Println("=== Ubah Barang ===")
 	kode := readNonEmpty("Masukkan kode barang : ")
 	idx  := cariBarang(*A, n, kode)
 	if idx != -1 {
-		A[idx].Nama  = readNonEmpty("Nama Baru  : ")   // FIX #8
-		A[idx].Harga = readPositiveInt("Harga Baru : ") // FIX #6
-		A[idx].Stok  = readPositiveInt("Stok Baru  : ") // FIX #6
+		A[idx].Nama  = readNonEmpty("Nama Baru  : ")   
+		A[idx].Harga = readPositiveInt("Harga Baru : ") 
+		A[idx].Stok  = readPositiveInt("Stok Baru  : ") 
 		fmt.Println("Data berhasil diubah")
 	} else {
 		fmt.Println("Barang tidak ditemukan")
 	}
 }
 
-// FIX #5: zero-out elemen terakhir setelah shift & decrement
 func hapusBarang(A *DaftarBarang, n *int) {
 	fmt.Println("=== Hapus Barang ===")
 	kode := readNonEmpty("Masukkan kode barang : ")
@@ -169,16 +159,13 @@ func hapusBarang(A *DaftarBarang, n *int) {
 			A[i] = A[i+1]
 		}
 		*n--
-		A[*n] = Barang{} // FIX #5: zero-out elemen terakhir (ghost data)
+		A[*n] = Barang{} 
 		fmt.Println("Barang berhasil dihapus")
 	} else {
 		fmt.Println("Barang tidak ditemukan")
 	}
 }
 
-// FIX #3: cek kapasitas DaftarTransaksi sebelum menulis
-// FIX #7: validasi jumlah transaksi > 0
-// FIX #9: jenis transaksi case-insensitive
 func catatTransaksi(gudang *DaftarBarang, jmlBarang int, trx *DaftarTransaksi, jmlTrx *int) {
 	fmt.Println("=== Catat Transaksi Barang ===")
 	if jmlBarang == 0 {
@@ -186,7 +173,6 @@ func catatTransaksi(gudang *DaftarBarang, jmlBarang int, trx *DaftarTransaksi, j
 		return
 	}
 
-	// FIX #3
 	if *jmlTrx >= NMAX {
 		fmt.Printf("Riwayat transaksi penuh! Kapasitas maksimal %d transaksi.\n", NMAX)
 		return
@@ -201,10 +187,7 @@ func catatTransaksi(gudang *DaftarBarang, jmlBarang int, trx *DaftarTransaksi, j
 
 	fmt.Printf("Barang: %s | Stok saat ini: %d\n", gudang[indeks].Nama, gudang[indeks].Stok)
 
-	// FIX #9: normalisasi input jenis transaksi (case-insensitive)
 	jenis := strings.ToLower(readNonEmpty("Jenis Transaksi (Masuk / Keluar) : "))
-
-	// FIX #7: validasi jumlah > 0
 	jumlah := readPositiveInt("Jumlah Barang                    : ")
 
 	if jenis == "Masuk" || jenis == "masuk" {
@@ -261,7 +244,6 @@ func sequentialSearchNama(A DaftarBarang, n int, nama string) {
 	}
 }
 
-// FIX #4: binary search by kode — membutuhkan data terurut by kode, bukan stok
 func binarySearchKode(A DaftarBarang, n int, kode string) int {
 	kiri, kanan := 0, n-1
 	for kiri <= kanan {
@@ -277,7 +259,6 @@ func binarySearchKode(A DaftarBarang, n int, kode string) int {
 	return -1
 }
 
-// FIX #4: searchBarang kini memakai sudahTerurutKode (bukan sudahTerurut stok)
 func searchBarang(A DaftarBarang, n int, sudahTerurutKode bool) {
 	fmt.Println("=== Pencarian Barang ===")
 	if n == 0 {
@@ -296,7 +277,6 @@ func searchBarang(A DaftarBarang, n int, sudahTerurutKode bool) {
 		fmt.Println("2. Binary Search")
 		metode := readInt("Pilih : ")
 
-		// FIX #4: cek flag kode, bukan stok
 		if metode == 2 && !sudahTerurutKode {
 			fmt.Println("Data belum diurutkan berdasarkan Kode! Gunakan menu Sort → Urutkan by Kode terlebih dahulu.")
 			return
@@ -356,7 +336,6 @@ func insertionSortStok(A *DaftarBarang, n int, ascending bool) {
 	}
 }
 
-// FIX #4: tambahkan sort by Kode (insertion sort) supaya binary search valid
 func insertionSortKode(A *DaftarBarang, n int) {
 	for i := 1; i < n; i++ {
 		temp := A[i]
@@ -369,7 +348,6 @@ func insertionSortKode(A *DaftarBarang, n int) {
 	}
 }
 
-// FIX #4: sortBarang kini mengelola dua flag terpisah (sudahTerurutStok & sudahTerurutKode)
 func sortBarang(A *DaftarBarang, n int, sudahTerurutStok *bool, sudahTerurutKode *bool) {
 	fmt.Println("=== Pengurutan ===")
 	if n == 0 {
@@ -408,12 +386,12 @@ func sortBarang(A *DaftarBarang, n int, sudahTerurutStok *bool, sudahTerurutKode
 			insertionSortStok(A, n, ascending)
 		}
 		*sudahTerurutStok = true
-		*sudahTerurutKode = false // sort by stok membatalkan urutan kode
+		*sudahTerurutKode = false 
 
 	} else if basis == 2 {
 		insertionSortKode(A, n)
 		*sudahTerurutKode = true
-		*sudahTerurutStok = false // sort by kode membatalkan urutan stok
+		*sudahTerurutStok = false 
 		fmt.Println("Data berhasil diurutkan berdasarkan Kode. Binary Search kini tersedia.")
 	} else {
 		fmt.Println("Pilihan tidak tersedia")
@@ -466,14 +444,12 @@ func statistikBarang(A DaftarBarang, n int) {
 }
 
 func main() {
-	// Inisialisasi scanner di sini agar tidak membaca stdin sebelum program siap
 	scanner = bufio.NewScanner(os.Stdin)
 
 	var data      DaftarBarang
 	var daftarTrx DaftarTransaksi
 	var n, jmlTrx int
 
-	// FIX #4: pisahkan dua flag untuk stok dan kode
 	sudahTerurutStok := false
 	sudahTerurutKode := false
 
