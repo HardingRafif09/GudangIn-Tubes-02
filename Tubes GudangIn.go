@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-const NMAX = 100
+const NMAX = 1000
 
 type Barang struct {
 	Kode  string
@@ -20,6 +20,7 @@ type Barang struct {
 type Transaksi struct {
 	Kode   string
 	Jenis  string
+	Nama   string
 	Jumlah int
 }
 
@@ -169,7 +170,7 @@ func hapusBarang(A *DaftarBarang, n *int) {
 func catatTransaksi(gudang *DaftarBarang, jmlBarang int, trx *DaftarTransaksi, jmlTrx *int) {
 	fmt.Println("=== Catat Transaksi Barang ===")
 	if jmlBarang == 0 {
-		fmt.Println("Gudang kosong! Tambahkan master barang terlebih dahulu.")
+		fmt.Println("Gudang kosong! Tambahkan  barang terlebih dahulu.")
 		return
 	}
 
@@ -190,10 +191,10 @@ func catatTransaksi(gudang *DaftarBarang, jmlBarang int, trx *DaftarTransaksi, j
 	jenis := strings.ToLower(readNonEmpty("Jenis Transaksi (Masuk / Keluar) : "))
 	jumlah := readPositiveInt("Jumlah Barang                    : ")
 
-	if jenis == "Masuk" || jenis == "masuk" {
+	if jenis == "masuk" {
 		gudang[indeks].Stok += jumlah
 		fmt.Printf("Sukses: Stok %s bertambah menjadi %d\n", gudang[indeks].Nama, gudang[indeks].Stok)
-	} else if jenis == "Keluar" || jenis == "keluar" {
+	} else if jenis == "keluar" {
 		if gudang[indeks].Stok >= jumlah {
 			gudang[indeks].Stok -= jumlah
 			fmt.Printf("Sukses: Stok %s berkurang menjadi %d\n", gudang[indeks].Nama, gudang[indeks].Stok)
@@ -202,12 +203,16 @@ func catatTransaksi(gudang *DaftarBarang, jmlBarang int, trx *DaftarTransaksi, j
 			return
 		}
 	} else {
-		fmt.Println("Transaksi Gagal: Jenis transaksi tidak dikenal. Gunakan 'Masuk' atau 'Keluar'.")
+		fmt.Println("Transaksi Gagal : Jenis transaksi tidak valid.")
 		return
 	}
 
-	trx[*jmlTrx] = Transaksi{Kode: kode, Jenis: jenis, Jumlah: jumlah}
+	trx[*jmlTrx] = Transaksi{
+		Kode: kode, 
+		Jenis: jenis, 
+		Jumlah: jumlah}
 	*jmlTrx++
+	fmt.Println("Transaksi berhasil dicatat")
 }
 
 func tampilkanRiwayat(trx DaftarTransaksi, jmlTrx int) {
